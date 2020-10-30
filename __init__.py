@@ -324,7 +324,7 @@ async def async_setup(
             }
         )
 
-    hass.services.register(
+    hass.services.async_register(
         'better_plex',
         SERVICE_SEARCH_AND_PLAY,
         play_search_result,
