@@ -20,7 +20,6 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_GENRE,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_TVSHOW,
     SERVICE_PLAY_MEDIA
 )
 from homeassistant.components.plex import (

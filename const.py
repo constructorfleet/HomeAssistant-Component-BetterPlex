@@ -17,12 +17,13 @@ ATTR_SERVER_NAME = 'server_name'
 CONF_DEFAULT_SERVER_NAME = 'default_server_name'
 
 SERVICE_SEARCH_AND_PLAY = 'search_and_play'
+MEDIA_TYPE_SHOW = "show"
 
 VALID_MEDIA_TYPES = [
     # MEDIA_TYPE_EPISODE,
     MEDIA_TYPE_MOVIE,
     # MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_TVSHOW
+    MEDIA_TYPE_SHOW
 ]
 
 
