@@ -6,7 +6,7 @@ https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
 import logging
 from random import randint
-from typing import Optional, Sized
+from typing import Optional
 import voluptuous as vol
 
 from homeassistant.const import (
@@ -114,7 +114,7 @@ def _search(
         pick_random: bool = False,
         # season_number: int = None,
         # episode_number: int = None,
-        genres: Optional[Sized[str]] = None
+        genres = None
 ) -> Optional[Video]:
     import plexapi.server as plex_api_server
 
@@ -189,7 +189,7 @@ def _get_plex_server_library_by_name(
 def _get_library_items_of_type(
         plex_server_library: Library,
         media_content_type: str
-) -> Optional[Sized[Video]]:
+):
     matching_items = [
         item for
         item
@@ -213,9 +213,9 @@ def _get_library_items_of_type(
 
 
 def _filter_items_by_genre(
-        media_items: Sized[Video],
-        genres: Sized[str]
-) -> Optional[Sized[Video]]:
+        media_items,
+        genres
+):
     if not genres:
         _LOGGER.error(
             "No genres specified to filter by"
@@ -240,9 +240,9 @@ def _filter_items_by_genre(
 
 
 def _filter_items_by_title(
-        media_items: Sized[Video],
-        media_title: str
-) -> Optional[Sized[Video]]:
+        media_items,
+        media_title
+):
     from fuzzywuzzy import fuzz
 
     matching_items = [
