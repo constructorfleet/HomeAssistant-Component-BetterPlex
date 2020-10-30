@@ -6,7 +6,7 @@ https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
 import logging
 from random import randint
-from typing import Iterable, Optional
+from typing import Optional, Sized
 import voluptuous as vol
 
 from homeassistant.const import (
@@ -114,7 +114,7 @@ def _search(
         pick_random: bool = False,
         # season_number: int = None,
         # episode_number: int = None,
-        genres: Optional[Iterable[str]] = None
+        genres: Optional[Sized[str]] = None
 ) -> Optional[Video]:
     import plexapi.server as plex_api_server
 
@@ -140,7 +140,7 @@ def _search(
 
     if pick_random:
         if media_items:
-            return media_items.__getitem__(randint(0, len(media_items)))  # TODO: Play it
+            return media_items[randint(0, len(media_items) - 1)]  # TODO: Play it
     elif media_title:
         media_items = _filter_items_by_title(
             media_items,
@@ -189,7 +189,7 @@ def _get_plex_server_library_by_name(
 def _get_library_items_of_type(
         plex_server_library: Library,
         media_content_type: str
-) -> Optional[Iterable[Video]]:
+) -> Optional[Sized[Video]]:
     matching_items = [
         item for
         item
@@ -213,9 +213,9 @@ def _get_library_items_of_type(
 
 
 def _filter_items_by_genre(
-        media_items: Iterable[Video],
-        genres: Iterable[str]
-) -> Optional[Iterable[Video]]:
+        media_items: Sized[Video],
+        genres: Sized[str]
+) -> Optional[Sized[Video]]:
     if not genres:
         _LOGGER.error(
             "No genres specified to filter by"
@@ -240,9 +240,9 @@ def _filter_items_by_genre(
 
 
 def _filter_items_by_title(
-        media_items: Iterable[Video],
+        media_items: Sized[Video],
         media_title: str
-) -> Optional[Iterable[Video]]:
+) -> Optional[Sized[Video]]:
     from fuzzywuzzy import fuzz
 
     matching_items = [
