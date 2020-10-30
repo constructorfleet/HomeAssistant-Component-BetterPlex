@@ -4,6 +4,7 @@ Add extra functionality to the Plex integration.
 For more details about this component, please refer to the documentation at
 https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
+import re
 import logging
 from random import randint
 from typing import Optional
@@ -44,6 +45,7 @@ from .const import (
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     SERVICE_SEARCH_AND_PLAY,
+    NON_ALPHA_NUMERIC_REGEX_PATTERN,
     VALID_MEDIA_TYPES
 )
 
@@ -81,6 +83,9 @@ CONFIG_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA
 )
+
+
+def _cleanup_title(title: str) -> str:
 
 
 def _get_mediaplayer_by_entity_id(
@@ -247,11 +252,14 @@ def _filter_items_by_title(
     matching_items = [
         {
             "media_item": item,
-            "match": fuzz.token_set_ratio(item.title, media_title)
+            "match": fuzz.WRatio(
+                fuzz.WRatio(
+                    re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_titlemedia_title, full_process=True)
+                )
+            )
         }
         for item
         in media_items
-        if fuzz.WRatio(item.title, media_title, full_process=True) > 85
     ]
 
     if not matching_items:
