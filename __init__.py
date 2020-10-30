@@ -130,7 +130,7 @@ def _search(
     if not media_items:
         return
 
-    if media_genre:
+    if genres:
         media_items = _filter_items_by_genre(
             media_items,
             genres
