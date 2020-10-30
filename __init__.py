@@ -46,6 +46,7 @@ from .const import (
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     DOMAIN,
+    SERVICE_SEARCH_AND_PLAY,
     VALID_MEDIA_TYPES
 )
 
@@ -318,3 +319,12 @@ async def async_setup(
                 ATTR_MEDIA_CONTENT_ID: search_result.ratingKey
             }
         )
+
+    await hass.services.async_register(
+        DOMAIN,
+        SERVICE_SEARCH_AND_PLAY,
+        play_search_result,
+        SEARCH_AND_PLAY_SCHEMA
+    )
+
+    return True
