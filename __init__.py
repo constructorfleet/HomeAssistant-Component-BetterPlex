@@ -66,7 +66,7 @@ SEARCH_AND_PLAY_SCHEMA = vol.Schema(
         vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
         vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
         vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
-        vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, VALID_MEDIA_TYPES),
+        vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, vol.In(VALID_MEDIA_TYPES)),
         vol.Optional(ATTR_GENRES): vol.All(
             cv.ensure_list,
             [cv.string]
