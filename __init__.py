@@ -65,7 +65,7 @@ SEARCH_AND_PLAY_SCHEMA = vol.Schema(
             cv.string,
             cv.entity_id
         ),
-        vol.Optional(ATTR_SERVER_NAME): v.string,
+        vol.Optional(ATTR_SERVER_NAME): cv.string,
         vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
         vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
         vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
