@@ -56,7 +56,6 @@ from fuzzywuzzy import fuzz
 
 _LOGGER = logging.getLogger(__name__)
 MEDIAPLAYER_DOMAIN = 'media_player'
-DOMAIN: 'better_plex'
 
 SEARCH_AND_PLAY_SCHEMA = vol.Schema(
     {
@@ -272,7 +271,7 @@ async def async_setup(
         hass: HomeAssistantType,
         config: ConfigType
 ):
-    conf = config.get(DOMAIN)
+    conf = config.get('better_plex')
 
     async def play_search_result(
             entity_id: str,
@@ -324,7 +323,7 @@ async def async_setup(
         )
 
     await hass.services.async_register(
-        DOMAIN,
+        'better_plex',
         SERVICE_SEARCH_AND_PLAY,
         play_search_result,
         SEARCH_AND_PLAY_SCHEMA
