@@ -107,6 +107,7 @@ def _get_mediaplayer_by_entity_id(
 
 
 def _search(
+        hass: HomeAssistantType,
         media_content_type: str,
         server_name: str = None,
         media_title: str = None,
@@ -290,6 +291,7 @@ async def async_setup(
             return
 
         search_result = _search(
+            hass,
             media_content_type,
             server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
             media_title,
