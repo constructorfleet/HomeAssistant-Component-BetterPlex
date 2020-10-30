@@ -64,8 +64,8 @@ SEARCH_AND_PLAY_SCHEMA = vol.Schema(
         vol.Optional(ATTR_SERVER_NAME): cv.string,
         vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
         vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
-        vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
-        vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
+        # vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
+        # vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
         vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, vol.In(VALID_MEDIA_TYPES)),
         vol.Optional(ATTR_GENRES): vol.All(
             cv.ensure_list,
@@ -111,8 +111,8 @@ def _search(
         server_name: str = None,
         media_title: str = None,
         pick_random: bool = False,
-        season_number: int = None,
-        episode_number: int = None,
+        # season_number: int = None,
+        # episode_number: int = None,
         genres: Optional[Iterable[str]] = None
 ) -> Optional[Video]:
     import plexapi.server as plex_api_server
@@ -294,8 +294,8 @@ async def async_setup(
             server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
             media_title,
             pick_random=pick_random,
-            season_number=season_number,
-            episode_number=episode_number,
+            # season_number=season_number,
+            # episode_number=episode_number,
             genres=genres
         )
 
