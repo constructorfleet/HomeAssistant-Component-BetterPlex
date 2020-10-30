@@ -6,7 +6,7 @@ https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
 import logging
 from random import randint
-from typing import Iterable
+from typing import Iterable, Optional
 import voluptuous as vol
 
 from homeassistant.const import (
