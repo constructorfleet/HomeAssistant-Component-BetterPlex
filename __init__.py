@@ -167,8 +167,8 @@ def _get_plex_server_library_by_name(
 
     matching_plex_servers = [
         server
-        for server
-        in hass.data[PLEX_DOMAIN][SERVERS]
+        for server_id, server
+        in hass.data[PLEX_DOMAIN][SERVERS].items()
         if server.friendly_name.lower() == server_name.lower()
     ]
     if not matching_plex_servers:
