@@ -306,7 +306,7 @@ async def async_setup(
                 "No media items match the search criteria"
             )
             return
-        if not search_result['ratingKey']:
+        if not search_result.ratingKey:
             _LOGGER.error(
                 "Unable to determine the unique identifier for media item %s",
                 search_result.title
