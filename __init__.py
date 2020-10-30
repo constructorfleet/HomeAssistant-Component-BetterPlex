@@ -274,15 +274,17 @@ async def async_setup(
     conf = config.get('better_plex')
 
     async def play_search_result(
-            entity_id: str,
-            media_content_type: str,
-            server_name: str = None,
-            media_title: str = None,
-            pick_random: bool = False,
-            season_number: int = None,
-            episode_number: int = None,
-            genres: Optional[Iterable[str]] = None
+            service
     ):
+        entity_id = service.data.get(ATTR_ENTITY_ID)
+        media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
+        server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
+        media_title = service.data.get(ATTR_MEDIA_TITLE, None)
+        pick_random = service.data.get(ATTR_PICK_RANDOM, False)
+        # season_number: int = None,
+        # episode_number: int = None,
+        genres = service.data.get(ATTR_GENRES, None)
+
         entity = _get_mediaplayer_by_entity_id(
             hass,
             entity_id
