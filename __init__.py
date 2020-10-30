@@ -147,7 +147,7 @@ def _search(
             media_title
         )
         if media_items:
-            return media_items[0]
+            return media_items[0]['media_item']
 
     _LOGGER.error(
         "Unable to find any matching media items."
@@ -306,6 +306,8 @@ async def async_setup(
                 "No media items match the search criteria"
             )
             return
+        _LOGGER.warn(str(search_result))
+        _LOGGER.warn(repr(search_result))
         if not search_result.ratingKey:
             _LOGGER.error(
                 "Unable to determine the unique identifier for media item %s",
