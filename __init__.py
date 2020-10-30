@@ -262,7 +262,7 @@ def _filter_items_by_title(
         )
         return None
 
-    return sorted(matching_items, key=lambda item: item.match)
+    return sorted(matching_items, key=lambda item: item['match'])
 
 
 async def async_setup(
