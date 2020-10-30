@@ -21,7 +21,6 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_TVSHOW,
-    DOMAIN as MEDIAPLAYER_DOMAIN,
     SERVICE_PLAY_MEDIA
 )
 from homeassistant.components.plex import (
@@ -56,7 +55,7 @@ from plexapi.video import Video, Movie, Show, Season, Episode
 from fuzzywuzzy import fuzz
 
 _LOGGER = logging.getLogger(__name__)
-
+MEDIAPLAYER_DOMAIN = 'media_player'
 DOMAIN: 'better_plex'
 
 SEARCH_AND_PLAY_SCHEMA = vol.Schema(
@@ -81,11 +80,14 @@ SEARCH_AND_PLAY_SCHEMA = vol.Schema(
     }
 )
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Optional(CONF_DEFAULT_SERVER_NAME): cv.string,
-    }),
-}, extra=vol.ALLOW_EXTRA)
+CONFIG_SCHEMA = vol.Schema(
+    {
+        'better_plex': vol.Schema({
+            vol.Optional(CONF_DEFAULT_SERVER_NAME): cv.string,
+        }),
+    },
+    extra=vol.ALLOW_EXTRA
+)
 
 
 def _get_mediaplayer_by_entity_id(
