@@ -16,8 +16,6 @@ ATTR_SERVER_NAME = 'server_name'
 
 CONF_DEFAULT_SERVER_NAME = 'default_server_name'
 
-DOMAIN: 'better_plex'
-
 SERVICE_SEARCH_AND_PLAY = 'search_and_play'
 
 VALID_MEDIA_TYPES = [

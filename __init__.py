@@ -45,7 +45,6 @@ from .const import (
     ATTR_SEASON_NUMBER,
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
-    DOMAIN,
     SERVICE_SEARCH_AND_PLAY,
     VALID_MEDIA_TYPES
 )
@@ -57,6 +56,8 @@ from plexapi.video import Video, Movie, Show, Season, Episode
 from fuzzywuzzy import fuzz
 
 _LOGGER = logging.getLogger(__name__)
+
+DOMAIN: 'better_plex'
 
 SEARCH_AND_PLAY_SCHEMA = vol.Schema(
     {
