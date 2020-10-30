@@ -52,8 +52,6 @@ from plexapi.library import Library
 from plexapi.base import PlexObject
 from plexapi.video import Video, Movie, Show, Season, Episode
 
-from fuzzywuzzy import fuzz
-
 _LOGGER = logging.getLogger(__name__)
 MEDIAPLAYER_DOMAIN = 'media_player'
 
@@ -247,6 +245,8 @@ def _filter_items_by_title(
         media_items: Iterable[Video],
         media_title: str
 ) -> Optional[Iterable[Video]]:
+    from fuzzywuzzy import fuzz
+
     matching_items = [
         {
             "media_item": item,
