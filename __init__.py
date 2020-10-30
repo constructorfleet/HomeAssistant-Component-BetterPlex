@@ -251,7 +251,7 @@ def _filter_items_by_title(
         }
         for item
         in media_items
-        if fuzz.token_set_ratio(item.title, media_title) > 85
+        if fuzz.WRatio(item.title, media_title, full_process=True) > 85
     ]
 
     if not matching_items:
