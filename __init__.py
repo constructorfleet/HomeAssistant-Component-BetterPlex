@@ -68,9 +68,6 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-def _cleanup_title(title: str) -> str:
-
-
 def _get_media_player_by_name(
         hass: HomeAssistantType,
         player_name: str
@@ -324,7 +321,7 @@ async def async_setup(
             vol.Required(ATTR_SERVER_NAME): cv.string
         }
 
-    SEARCH_AND_PLAY_SCHEMA = vol.Schema(
+    search_and_play_schema = vol.Schema(
         {
             vol.Required(ATTR_PLAYER_NAME): cv.string,
             vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
@@ -343,7 +340,7 @@ async def async_setup(
         'better_plex',
         SERVICE_SEARCH_AND_PLAY,
         play_search_result,
-        SEARCH_AND_PLAY_SCHEMA
+        search_and_play_schema
     )
 
     return True
