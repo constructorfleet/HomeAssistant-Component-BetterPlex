@@ -7,6 +7,7 @@
     "python-levenshtein==0.12.0"
   ],
   "dependencies": [
+    "media_player",
     "plex"
   ],
   "codeowners": [

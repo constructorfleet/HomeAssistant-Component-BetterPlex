@@ -1,3 +1,4 @@
+import re
 from homeassistant.components.media_player.const import (
     MEDIA_TYPE_EPISODE,
     MEDIA_TYPE_MOVIE,
@@ -13,6 +14,7 @@ ATTR_SEASON_NUMBER = 'season_number'
 ATTR_EPISODE_NUMBER = 'episode_number'
 ATTR_PICK_RANDOM = 'pick_random'
 ATTR_SERVER_NAME = 'server_name'
+ATTR_PLAYER_NAME = 'player_name'
 
 CONF_DEFAULT_SERVER_NAME = 'default_server_name'
 
@@ -26,4 +28,4 @@ VALID_MEDIA_TYPES = [
     MEDIA_TYPE_SHOW
 ]
 
-NON_ALPHA_NUMERIC_REGEX_PATTERN = "[^0-9a-zA-Z ]+"
+NON_ALPHA_NUMERIC_REGEX_PATTERN = re.compile("[^0-9a-zA-Z ]+")

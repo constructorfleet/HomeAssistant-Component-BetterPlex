@@ -41,6 +41,8 @@ from .const import (
     ATTR_GENRES,
     ATTR_MEDIA_TITLE,
     ATTR_PICK_RANDOM,
+    ATTR_PLAYER_NAME,
+    ATTR_SERVER_NAME,
     ATTR_SEASON_NUMBER,
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
@@ -54,26 +56,7 @@ from plexapi.base import PlexObject
 from plexapi.video import Video, Movie, Show, Season, Episode
 
 _LOGGER = logging.getLogger(__name__)
-MEDIAPLAYER_DOMAIN = 'media_player'
-
-SEARCH_AND_PLAY_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): vol.All(
-            cv.string,
-            cv.entity_id
-        ),
-        vol.Optional(ATTR_SERVER_NAME): cv.string,
-        vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
-        vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
-        # vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
-        # vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
-        vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, vol.In(VALID_MEDIA_TYPES)),
-        vol.Optional(ATTR_GENRES): vol.All(
-            cv.ensure_list,
-            [cv.string]
-        )
-    }
-)
+MEDIA_PLAYER_DOMAIN = 'media_player'
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -88,11 +71,12 @@ CONFIG_SCHEMA = vol.Schema(
 def _cleanup_title(title: str) -> str:
 
 
-def _get_mediaplayer_by_entity_id(
+def _get_media_player_by_name(
         hass: HomeAssistantType,
-        entity_id: str
+        player_name: str
 ) -> Optional[PlexMediaPlayer]:
-    entity = hass.data[MEDIAPLAYER_DOMAIN].get_entity(entity_id)
+
+    entity = hass.data[MEDIA_PLAYER_DOMAIN].get_entity(entity_id)
     if not entity:
         _LOGGER.error(
             "Unable to locate entity with id %s",
@@ -118,7 +102,7 @@ def _search(
         pick_random: bool = False,
         # season_number: int = None,
         # episode_number: int = None,
-        genres = None
+        genres=None
 ) -> Optional[Video]:
     import plexapi.server as plex_api_server
 
@@ -156,7 +140,7 @@ def _search(
     _LOGGER.error(
         "Unable to find any matching media items."
     )
-    return
+    return None
 
 
 def _get_plex_server_library_by_name(
@@ -253,9 +237,8 @@ def _filter_items_by_title(
         {
             "media_item": item,
             "match": fuzz.WRatio(
-                fuzz.WRatio(
-                    re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_titlemedia_title, full_process=True)
-                )
+                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title),
+                full_process=True
             )
         }
         for item
@@ -323,7 +306,7 @@ async def async_setup(
             return
 
         await hass.services.async_call(
-            MEDIAPLAYER_DOMAIN,
+            MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
             {
                 ATTR_ENTITY_ID: entity_id,
@@ -331,6 +314,30 @@ async def async_setup(
                 ATTR_MEDIA_CONTENT_ID: search_result.ratingKey
             }
         )
+
+    if conf.get(CONF_DEFAULT_SERVER_NAME, None):
+        schema_extend = {
+            vol.Optional(ATTR_SERVER_NAME, default=conf[CONF_DEFAULT_SERVER_NAME]): cv.string
+        }
+    else:
+        schema_extend = {
+            vol.Required(ATTR_SERVER_NAME): cv.string
+        }
+
+    SEARCH_AND_PLAY_SCHEMA = vol.Schema(
+        {
+            vol.Required(ATTR_PLAYER_NAME): cv.string,
+            vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
+            vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
+            # vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
+            # vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
+            vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, vol.In(VALID_MEDIA_TYPES)),
+            vol.Optional(ATTR_GENRES): vol.All(
+                cv.ensure_list,
+                [cv.string]
+            )
+        }.update(schema_extend)
+    )
 
     hass.services.async_register(
         'better_plex',
