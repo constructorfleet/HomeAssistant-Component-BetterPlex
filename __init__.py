@@ -91,7 +91,7 @@ def _get_media_player_by_entity_id(
     return entity
 
 
-def _search(
+async def _search(
         hass: HomeAssistantType,
         media_content_type: str,
         server_name: str = None,
@@ -103,12 +103,12 @@ def _search(
 ) -> Optional[Video]:
     import plexapi.server as plex_api_server
 
-    server_name = server_name if server_name is not None else conf.get(CONF_DEFAULT_SERVER_NAME, None)
+    server_name = server_name
     plex_server_library = _get_plex_server_library_by_name(hass, server_name)
     if not plex_server_library:
         return
 
-    media_items = _get_library_items_of_type(
+    media_items = await _get_library_items_of_type(
         plex_server_library,
         media_content_type
     )
@@ -171,14 +171,14 @@ def _get_plex_server_library_by_name(
     return matching_plex_servers[0].library
 
 
-def _get_library_items_of_type(
+async def _get_library_items_of_type(
         plex_server_library: Library,
         media_content_type: str
 ):
     matching_items = [
         item for
         item
-        in plex_server_library.search(libtype=media_content_type.lower())
+        in await plex_server_library.search(libtype=media_content_type.lower())
         if item.TYPE.lower() == media_content_type.lower()
     ]
 
@@ -234,7 +234,8 @@ def _filter_items_by_title(
         {
             "media_item": item,
             "match": fuzz.WRatio(
-                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title),
+                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
+                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
                 full_process=True
             )
         }
@@ -277,7 +278,7 @@ async def async_setup(
         if not entity:
             return
 
-        search_result = _search(
+        search_result = await _search(
             hass,
             media_content_type,
             server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
