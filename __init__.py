@@ -40,7 +40,7 @@ from .const import (
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     SERVICE_SEARCH_AND_PLAY,
-    VALID_MEDIA_TYPES
+    VALID_MEDIA_TYPES, ATTR_SEASON_NUMBER, ATTR_EPISODE_NUMBER
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,14 +115,15 @@ async def async_setup(
                 _LOGGER.info('No items found')
                 return
 
-        if pick_random:
-            if media_items:
-                return media_items[randint(0, len(media_items) - 1)]  # TODO: Play it
-        elif media_title:
+        if media_title:
             media_items = _filter_items_by_title(
                 media_items,
                 media_title
             )
+
+        if media_items:
+            if pick_random:
+                return media_items[randint(0, len(media_items) - 1)]['media_item']
             if media_items:
                 return media_items[0]['media_item']
 
@@ -298,10 +299,10 @@ async def async_setup(
         {
             vol.Required(ATTR_ENTITY_ID): cv.string,
             vol.Required(ATTR_SERVER_NAME, default=conf[CONF_DEFAULT_SERVER_NAME]): cv.string,
-            vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
-            vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
-            # vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
-            # vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
+            vol.Optional(ATTR_MEDIA_TITLE): cv.string,
+            vol.Optional(ATTR_PICK_RANDOM): cv.boolean,
+            vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
+            vol.Optional(ATTR_EPISODE_NUMBER): cv.positive_int,
             vol.Required(ATTR_MEDIA_CONTENT_TYPE): vol.All(cv.string, vol.In(VALID_MEDIA_TYPES)),
             vol.Optional(ATTR_GENRES): vol.All(
                 cv.ensure_list,
