@@ -96,7 +96,6 @@ async def async_setup(
         if not plex_server_library:
             return
         media_items = _get_library_items_of_type(
-            hass,
             plex_server_library,
             media_content_type
         )
