@@ -121,6 +121,8 @@ async def async_setup(
                 media_title
             )
 
+        _LOGGER.info('ITEMS %s', str(media_items))
+
         if media_items:
             if pick_random:
                 return media_items[randint(0, len(media_items) - 1)]['media_item']
