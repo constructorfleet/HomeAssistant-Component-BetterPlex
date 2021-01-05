@@ -2,7 +2,7 @@ search_and_play:
   description: Search for a media item and play it on the specified plex player.
   fields:
     entity_id:
-      description: The entitiy to play media on
+      description: The entity to play media on
       example: media_player.plex_player
     server_name:
       description: The plex server to search
@@ -10,6 +10,9 @@ search_and_play:
     pick_random:
       description: Pick a random item from the results
       example: true
+#    media_title: "South Park"
+#    season: 1
+#    episode: 10
     media_content_type:
       description: The content type of the media
       example: movie
