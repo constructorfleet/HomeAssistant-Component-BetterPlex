@@ -4,7 +4,6 @@ Add extra functionality to the Plex integration.
 For more details about this component, please refer to the documentation at
 https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
-import concurrent
 import logging
 from random import randint
 from typing import Optional
@@ -285,7 +284,7 @@ async def async_setup(
             }
         )
 
-    async def handle_play_search_result(
+    def handle_play_search_result(
             service
     ):
         entity_id = service.data.get(ATTR_ENTITY_ID)
@@ -303,14 +302,13 @@ async def async_setup(
         )
         if not entity:
             return
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-        await hass.loop.run_in_executor(executor,
-                                        _play_search_result(
-                                            entity,
-                                            media_content_type,
-                                            server_name, media_title,
-                                            genres=genres,
-                                            pick_random=pick_random))
+
+        _play_search_result(
+            entity,
+            media_content_type,
+            server_name, media_title,
+            genres=genres,
+            pick_random=pick_random)
 
     search_and_play_schema = vol.Schema(
         {
@@ -328,7 +326,7 @@ async def async_setup(
         }
     )
 
-    hass.services.async_register(
+    hass.services.register(
         'better_plex',
         SERVICE_SEARCH_AND_PLAY,
         handle_play_search_result,
