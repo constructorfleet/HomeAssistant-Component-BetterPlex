@@ -4,56 +4,43 @@ Add extra functionality to the Plex integration.
 For more details about this component, please refer to the documentation at
 https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
-import re
 import logging
 from random import randint
 from typing import Optional
-import voluptuous as vol
 
-from homeassistant.const import (
-    ATTR_ENTITY_ID
-)
 import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_TYPE,
     ATTR_MEDIA_CONTENT_ID,
-    MEDIA_TYPE_EPISODE,
-    MEDIA_TYPE_GENRE,
-    MEDIA_TYPE_MOVIE,
-    MEDIA_TYPE_MUSIC,
     SERVICE_PLAY_MEDIA
 )
 from homeassistant.components.plex import (
     PLEX_DOMAIN,
-    SERVERS,
-    PlexServer
+    SERVERS
 )
 from homeassistant.components.plex.media_player import (
     PlexMediaPlayer
+)
+from homeassistant.const import (
+    ATTR_ENTITY_ID
 )
 from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
 )
+from plexapi.library import Library
+from plexapi.video import Video
 
 from .const import (
-    ATTR_EPISODE_NUMBER,
     ATTR_GENRES,
     ATTR_MEDIA_TITLE,
     ATTR_PICK_RANDOM,
-    ATTR_PLAYER_NAME,
-    ATTR_SERVER_NAME,
-    ATTR_SEASON_NUMBER,
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     SERVICE_SEARCH_AND_PLAY,
-    NON_ALPHA_NUMERIC_REGEX_PATTERN,
     VALID_MEDIA_TYPES
 )
-
-from plexapi.library import Library
-from plexapi.base import PlexObject
-from plexapi.video import Video, Movie, Show, Season, Episode
 
 _LOGGER = logging.getLogger(__name__)
 MEDIA_PLAYER_DOMAIN = 'media_player'
@@ -101,8 +88,6 @@ async def _search(
         # episode_number: int = None,
         genres=None
 ) -> Optional[Video]:
-    import plexapi.server as plex_api_server
-
     server_name = server_name
     plex_server_library = _get_plex_server_library_by_name(hass, server_name)
     if not plex_server_library:
@@ -234,8 +219,8 @@ def _filter_items_by_title(
         {
             "media_item": item,
             "match": fuzz.WRatio(
-                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
-                re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
+                media_title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
+                item.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
                 full_process=True
             )
         }
@@ -259,7 +244,47 @@ async def async_setup(
 ):
     conf = config.get('better_plex')
 
-    async def play_search_result(
+    async def _play_search_result(
+            entity,
+            media_content_type,
+            server_name,
+            media_title=None,
+            season_number=None,
+            episode_number=None,
+            genres=None,
+            pick_random=False
+    ):
+        search_result = await _search(hass,
+                                      media_content_type,
+                                      server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
+                                      media_title,
+                                      pick_random=pick_random,
+                                      # season_number=season_number,
+                                      # episode_number=episode_number,
+                                      genres=None)
+
+        if not search_result:
+            _LOGGER.error("No media items match the search criteria")
+            return
+
+        if not search_result.ratingKey:
+            _LOGGER.error(
+                "Unable to determine the unique identifier for media item %s",
+                search_result.title
+            )
+            return
+
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_PLAY_MEDIA,
+            {
+                ATTR_ENTITY_ID: entity.entity_id,
+                ATTR_MEDIA_CONTENT_TYPE: media_content_type,
+                ATTR_MEDIA_CONTENT_ID: search_result.ratingKey
+            }
+        )
+
+    async def handle_play_search_result(
             service
     ):
         entity_id = service.data.get(ATTR_ENTITY_ID)
@@ -278,40 +303,7 @@ async def async_setup(
         if not entity:
             return
 
-        search_result = await _search(
-            hass,
-            media_content_type,
-            server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
-            media_title,
-            pick_random=pick_random,
-            # season_number=season_number,
-            # episode_number=episode_number,
-            genres=genres
-        )
-
-        if not search_result:
-            _LOGGER.error(
-                "No media items match the search criteria"
-            )
-            return
-        _LOGGER.warn(str(search_result))
-        _LOGGER.warn(repr(search_result))
-        if not search_result.ratingKey:
-            _LOGGER.error(
-                "Unable to determine the unique identifier for media item %s",
-                search_result.title
-            )
-            return
-
-        await hass.services.async_call(
-            MEDIA_PLAYER_DOMAIN,
-            SERVICE_PLAY_MEDIA,
-            {
-                ATTR_ENTITY_ID: entity_id,
-                ATTR_MEDIA_CONTENT_TYPE: media_content_type,
-                ATTR_MEDIA_CONTENT_ID: search_result.ratingKey
-            }
-        )
+        hass.async_create_task(_play_search_result(entity, media_content_type, server_name, media_title, genres=genres, pick_random=pick_random))
 
     search_and_play_schema = vol.Schema(
         {
@@ -332,7 +324,7 @@ async def async_setup(
     hass.services.async_register(
         'better_plex',
         SERVICE_SEARCH_AND_PLAY,
-        play_search_result,
+        handle_play_search_result,
         search_and_play_schema
     )
 
