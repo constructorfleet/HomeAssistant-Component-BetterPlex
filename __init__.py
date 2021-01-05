@@ -29,6 +29,7 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
 )
+from homeassistant.util.async_ import fire_coroutine_threadsafe
 from plexapi.library import Library
 from plexapi.video import Video
 
@@ -163,7 +164,7 @@ async def _get_library_items_of_type(
     matching_items = [
         item for
         item
-        in await plex_server_library.search(libtype=media_content_type.lower())
+        in plex_server_library.search(libtype=media_content_type.lower())
         if item.TYPE.lower() == media_content_type.lower()
     ]
 
@@ -303,7 +304,14 @@ async def async_setup(
         if not entity:
             return
 
-        hass.async_create_task(_play_search_result(entity, media_content_type, server_name, media_title, genres=genres, pick_random=pick_random))
+        fire_coroutine_threadsafe(
+            _play_search_result(
+                entity,
+                media_content_type,
+                server_name, media_title,
+                genres=genres,
+                pick_random=pick_random),
+            hass.loop)
 
     search_and_play_schema = vol.Schema(
         {
