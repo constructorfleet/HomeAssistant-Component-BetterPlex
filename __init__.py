@@ -82,7 +82,7 @@ async def async_setup(
 
         return entity
 
-    def _search(
+    async def _search(
             media_content_type: str,
             server_name: str = None,
             media_title: str = None,
@@ -156,8 +156,7 @@ async def async_setup(
 
         return matching_plex_servers[0].library
 
-    @callback
-    def _get_library_items_of_type(
+    async def _get_library_items_of_type(
             plex_server_library: Library,
             media_content_type: str
     ):
@@ -237,10 +236,7 @@ async def async_setup(
 
         return sorted(matching_items, key=lambda item: item['match'], reverse=True)
 
-    @callback
-    def handle_play_search_result(
-            service
-    ):
+    async def _perform_search(service):
         entity_id = service.data.get(ATTR_ENTITY_ID)
         media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
         server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
@@ -256,13 +252,13 @@ async def async_setup(
         if not entity:
             return
 
-        search_result = _search(media_content_type,
-                                server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
-                                media_title,
-                                pick_random=pick_random,
-                                # season_number=season_number,
-                                # episode_number=episode_number,
-                                genres=None)
+        search_result = await _search(media_content_type,
+                                      server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
+                                      media_title,
+                                      pick_random=pick_random,
+                                      # season_number=season_number,
+                                      # episode_number=episode_number,
+                                      genres=None)
 
         if not search_result:
             _LOGGER.error("No media items match the search criteria")
@@ -275,7 +271,7 @@ async def async_setup(
             )
             return
 
-        hass.services.async_call(
+        await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
             {
@@ -284,6 +280,12 @@ async def async_setup(
                 ATTR_MEDIA_CONTENT_ID: search_result.ratingKey
             }
         )
+
+    @callback
+    def handle_play_search_result(
+            service
+    ):
+        hass.loop.create_task(_perform_search(service))
 
     search_and_play_schema = vol.Schema(
         {
