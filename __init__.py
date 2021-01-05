@@ -303,12 +303,13 @@ async def async_setup(
         if not entity:
             return
 
-        hass.async_add_job(_play_search_result(
-            entity,
-            media_content_type,
-            server_name, media_title,
-            genres=genres,
-            pick_random=pick_random))
+        await hass.async_add_job(
+            _play_search_result(
+                entity,
+                media_content_type,
+                server_name, media_title,
+                genres=genres,
+                pick_random=pick_random))
 
     search_and_play_schema = vol.Schema(
         {
