@@ -10,11 +10,10 @@ ATTR_GENRES = 'genres'
 ATTR_LIBRARY = 'library'
 ATTR_MEDIA_CONTENT_TYPE = 'media_content_type'
 ATTR_MEDIA_TITLE = 'media_title'
-ATTR_SEASON_NUMBER = 'season_number'
-ATTR_EPISODE_NUMBER = 'episode_number'
+ATTR_SEASON_NUMBER = 'season'
+ATTR_EPISODE_NUMBER = 'episode'
 ATTR_PICK_RANDOM = 'pick_random'
 ATTR_SERVER_NAME = 'server_name'
-ATTR_PLAYER_NAME = 'player_name'
 
 CONF_DEFAULT_SERVER_NAME = 'default_server_name'
 
