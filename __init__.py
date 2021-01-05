@@ -125,9 +125,9 @@ async def async_setup(
 
         if media_items:
             if pick_random:
-                return media_items[randint(0, len(media_items) - 1)]['media_item']
+                return media_items[randint(0, len(media_items) - 1)]
             if media_items:
-                return media_items[0]['media_item']
+                return media_items[0]
 
         _LOGGER.error(
             "Unable to find any matching media items."
@@ -243,7 +243,9 @@ async def async_setup(
             return None
 
         _LOGGER.info('Sorting')
-        return sorted(matching_items, key=lambda item: item['match'], reverse=True)
+        return map(
+            lambda item: item['media_item'],
+            sorted(matching_items, key=lambda item: item['match'], reverse=True))
 
     async def _perform_search(service):
         entity_id = service.data.get(ATTR_ENTITY_ID)
