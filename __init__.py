@@ -312,18 +312,10 @@ async def async_setup(
             }
         )
 
-    if conf.get(CONF_DEFAULT_SERVER_NAME, None):
-        schema_extend = {
-            vol.Optional(ATTR_SERVER_NAME, default=conf[CONF_DEFAULT_SERVER_NAME]): cv.string
-        }
-    else:
-        schema_extend = {
-            vol.Required(ATTR_SERVER_NAME): cv.string
-        }
-
     search_and_play_schema = vol.Schema(
         {
-            vol.Required(ATTR_PLAYER_NAME): cv.string,
+            vol.Required(ATTR_ENTITY_ID): cv.string,
+            vol.Required(ATTR_SERVER_NAME, default=conf[CONF_DEFAULT_SERVER_NAME]): cv.string,
             vol.Exclusive(ATTR_MEDIA_TITLE, 'specific_or_random'): cv.string,
             vol.Exclusive(ATTR_PICK_RANDOM, 'specific_or_random'): cv.boolean,
             # vol.Optional(ATTR_SEASON_NUMBER): cv.positive_int,
@@ -333,7 +325,7 @@ async def async_setup(
                 cv.ensure_list,
                 [cv.string]
             )
-        }.update(schema_extend)
+        }
     )
 
     hass.services.async_register(
