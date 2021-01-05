@@ -25,6 +25,7 @@ from homeassistant.components.plex.media_player import (
 from homeassistant.const import (
     ATTR_ENTITY_ID
 )
+from homeassistant.core import callback
 from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
@@ -244,16 +245,26 @@ async def async_setup(
 ):
     conf = config.get('better_plex')
 
-    def _play_search_result(
-            entity,
-            media_content_type,
-            server_name,
-            media_title=None,
-            season_number=None,
-            episode_number=None,
-            genres=None,
-            pick_random=False
+    @callback
+    def handle_play_search_result(
+            service
     ):
+        entity_id = service.data.get(ATTR_ENTITY_ID)
+        media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
+        server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
+        media_title = service.data.get(ATTR_MEDIA_TITLE, None)
+        pick_random = service.data.get(ATTR_PICK_RANDOM, False)
+        # season_number: int = None,
+        # episode_number: int = None,
+        genres = service.data.get(ATTR_GENRES, None)
+
+        entity = _get_media_player_by_entity_id(
+            hass,
+            entity_id
+        )
+        if not entity:
+            return
+
         search_result = _search(hass,
                                 media_content_type,
                                 server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
@@ -284,32 +295,6 @@ async def async_setup(
             }
         )
 
-    def handle_play_search_result(
-            service
-    ):
-        entity_id = service.data.get(ATTR_ENTITY_ID)
-        media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
-        server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
-        media_title = service.data.get(ATTR_MEDIA_TITLE, None)
-        pick_random = service.data.get(ATTR_PICK_RANDOM, False)
-        # season_number: int = None,
-        # episode_number: int = None,
-        genres = service.data.get(ATTR_GENRES, None)
-
-        entity = _get_media_player_by_entity_id(
-            hass,
-            entity_id
-        )
-        if not entity:
-            return
-
-        _play_search_result(
-            entity,
-            media_content_type,
-            server_name, media_title,
-            genres=genres,
-            pick_random=pick_random)
-
     search_and_play_schema = vol.Schema(
         {
             vol.Required(ATTR_ENTITY_ID): cv.string,
@@ -326,11 +311,11 @@ async def async_setup(
         }
     )
 
-    hass.services.register(
+    hass.services.async_register(
         'better_plex',
         SERVICE_SEARCH_AND_PLAY,
         handle_play_search_result,
-        search_and_play_schema
+        schema=search_and_play_schema
     )
 
     return True
