@@ -243,9 +243,7 @@ async def async_setup(
             return None
 
         _LOGGER.info('Sorting')
-        return map(
-            lambda item: item['media_item'],
-            sorted(matching_items, key=lambda item: item['match'], reverse=True))
+        return [item['media_item'] for item in sorted(matching_items, key=lambda item: item['match'], reverse=True)]
 
     async def _perform_search(service):
         entity_id = service.data.get(ATTR_ENTITY_ID)
@@ -253,8 +251,8 @@ async def async_setup(
         server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
         media_title = service.data.get(ATTR_MEDIA_TITLE, None)
         pick_random = service.data.get(ATTR_PICK_RANDOM, False)
-        # season_number: int = None,
-        # episode_number: int = None,
+        season = service.data.get(ATTR_SEASON_NUMBER, 1)
+        episode = service.data.get(ATTR_EPISODE_NUMBER, 1)
         genres = service.data.get(ATTR_GENRES, None)
 
         entity = _get_media_player_by_entity_id(
