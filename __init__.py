@@ -68,9 +68,9 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-def _get_media_player_by_name(
+def _get_media_player_by_entity_id(
         hass: HomeAssistantType,
-        player_name: str
+        entity_id: str
 ) -> Optional[PlexMediaPlayer]:
 
     entity = hass.data[MEDIA_PLAYER_DOMAIN].get_entity(entity_id)
@@ -84,7 +84,7 @@ def _get_media_player_by_name(
     if not isinstance(entity, PlexMediaPlayer):
         _LOGGER.error(
             "Entity with id %s is not a PlexMediaPlayer",
-            entity_id
+            entity
         )
         return None
 
@@ -270,7 +270,7 @@ async def async_setup(
         # episode_number: int = None,
         genres = service.data.get(ATTR_GENRES, None)
 
-        entity = _get_mediaplayer_by_entity_id(
+        entity = _get_media_player_by_entity_id(
             hass,
             entity_id
         )
