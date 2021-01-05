@@ -59,7 +59,6 @@ def _get_media_player_by_entity_id(
         hass: HomeAssistantType,
         entity_id: str
 ) -> Optional[PlexMediaPlayer]:
-
     entity = hass.data[MEDIA_PLAYER_DOMAIN].get_entity(entity_id)
     if not entity:
         _LOGGER.error(
@@ -78,7 +77,7 @@ def _get_media_player_by_entity_id(
     return entity
 
 
-async def _search(
+def _search(
         hass: HomeAssistantType,
         media_content_type: str,
         server_name: str = None,
@@ -92,8 +91,7 @@ async def _search(
     plex_server_library = _get_plex_server_library_by_name(hass, server_name)
     if not plex_server_library:
         return
-
-    media_items = await _get_library_items_of_type(
+    media_items = _get_library_items_of_type(
         hass,
         plex_server_library,
         media_content_type
@@ -157,7 +155,7 @@ def _get_plex_server_library_by_name(
     return matching_plex_servers[0].library
 
 
-async def _get_library_items_of_type(
+def _get_library_items_of_type(
         hass: HomeAssistantType,
         plex_server_library: Library,
         media_content_type: str
@@ -165,7 +163,7 @@ async def _get_library_items_of_type(
     matching_items = [
         item for
         item
-        in await hass.async_add_executor_job(plex_server_library.search, None, media_content_type.lower())
+        in plex_server_library.search(libtype=media_content_type.lower())
         if item.TYPE.lower() == media_content_type.lower()
     ]
 
@@ -176,7 +174,7 @@ async def _get_library_items_of_type(
             [
                 library_section.lower()
                 for library_section
-                in await hass.async_add_executor_job(plex_server_library.library.sections)
+                in plex_server_library.library.sections()
             ]
         )
         return None
@@ -246,7 +244,7 @@ async def async_setup(
 ):
     conf = config.get('better_plex')
 
-    async def _play_search_result(
+    def _play_search_result(
             entity,
             media_content_type,
             server_name,
@@ -256,14 +254,14 @@ async def async_setup(
             genres=None,
             pick_random=False
     ):
-        search_result = await _search(hass,
-                                      media_content_type,
-                                      server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
-                                      media_title,
-                                      pick_random=pick_random,
-                                      # season_number=season_number,
-                                      # episode_number=episode_number,
-                                      genres=None)
+        search_result = _search(hass,
+                                media_content_type,
+                                server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
+                                media_title,
+                                pick_random=pick_random,
+                                # season_number=season_number,
+                                # episode_number=episode_number,
+                                genres=None)
 
         if not search_result:
             _LOGGER.error("No media items match the search criteria")
@@ -276,7 +274,7 @@ async def async_setup(
             )
             return
 
-        await hass.services.async_call(
+        hass.services.call(
             MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
             {
@@ -305,12 +303,12 @@ async def async_setup(
         if not entity:
             return
 
-        await _play_search_result(
-                entity,
-                media_content_type,
-                server_name, media_title,
-                genres=genres,
-                pick_random=pick_random)
+        hass.async_add_job(_play_search_result(
+            entity,
+            media_content_type,
+            server_name, media_title,
+            genres=genres,
+            pick_random=pick_random))
 
     search_and_play_schema = vol.Schema(
         {
