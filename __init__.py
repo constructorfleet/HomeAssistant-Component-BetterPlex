@@ -91,15 +91,19 @@ async def async_setup(
             # episode_number: int = None,
             genres=None
     ) -> Optional[Video]:
+        _LOGGER.info('Performing search')
         server_name = server_name
         plex_server_library = _get_plex_server_library_by_name(server_name)
         if not plex_server_library:
             return
+
+        _LOGGER.info('Getting library items')
         media_items = await _get_library_items_of_type(
             plex_server_library,
             media_content_type
         )
         if not media_items:
+            _LOGGER.info('No items found')
             return
 
         if genres:
@@ -108,6 +112,7 @@ async def async_setup(
                 genres
             )
             if not media_items:
+                _LOGGER.info('No items found')
                 return
 
         if pick_random:
@@ -213,6 +218,7 @@ async def async_setup(
     ):
         from fuzzywuzzy import fuzz
 
+        _LOGGER.info('Performing fuzzy match')
         matching_items = [
             {
                 "media_item": item,
@@ -233,6 +239,7 @@ async def async_setup(
             )
             return None
 
+        _LOGGER.info('Sorting')
         return sorted(matching_items, key=lambda item: item['match'], reverse=True)
 
     async def _perform_search(service):
@@ -270,6 +277,7 @@ async def async_setup(
             )
             return
 
+        _LOGGER.info('Invoking service')
         await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
