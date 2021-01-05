@@ -29,7 +29,6 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
 )
-from homeassistant.util.async_ import fire_coroutine_threadsafe
 from plexapi.library import Library
 from plexapi.video import Video
 
@@ -95,6 +94,7 @@ async def _search(
         return
 
     media_items = await _get_library_items_of_type(
+        hass,
         plex_server_library,
         media_content_type
     )
@@ -158,13 +158,14 @@ def _get_plex_server_library_by_name(
 
 
 async def _get_library_items_of_type(
+        hass: HomeAssistantType,
         plex_server_library: Library,
         media_content_type: str
 ):
     matching_items = [
         item for
         item
-        in plex_server_library.search(libtype=media_content_type.lower())
+        in await hass.async_add_executor_job(plex_server_library.search, None, media_content_type.lower())
         if item.TYPE.lower() == media_content_type.lower()
     ]
 
@@ -175,7 +176,7 @@ async def _get_library_items_of_type(
             [
                 library_section.lower()
                 for library_section
-                in plex_server_library.library.sections()
+                in await hass.async_add_executor_job(plex_server_library.library.sections)
             ]
         )
         return None
@@ -304,14 +305,12 @@ async def async_setup(
         if not entity:
             return
 
-        fire_coroutine_threadsafe(
-            _play_search_result(
+        await _play_search_result(
                 entity,
                 media_content_type,
                 server_name, media_title,
                 genres=genres,
-                pick_random=pick_random),
-            hass.loop)
+                pick_random=pick_random)
 
     search_and_play_schema = vol.Schema(
         {
