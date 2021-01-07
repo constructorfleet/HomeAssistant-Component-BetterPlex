@@ -14,7 +14,7 @@ import voluptuous as vol
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_TYPE,
     ATTR_MEDIA_CONTENT_ID,
-    SERVICE_PLAY_MEDIA, MEDIA_TYPE_EPISODE
+    SERVICE_PLAY_MEDIA, MEDIA_TYPE_EPISODE, MEDIA_TYPE_MOVIE
 )
 from homeassistant.components.plex import (
     PLEX_DOMAIN,
@@ -100,15 +100,37 @@ async def async_setup(
         if not plex_server_library:
             return
 
-        _LOGGER.info('Getting library items')
-        media_items = await _search_library(
-            plex_server_library,
-            libtype=media_content_type,
-            title=media_title,
-            grandparentTitle=show_name,
-            index=episode_number if show_name is not None else None,
-            parentIndex=season_number if show_name is not None else None
+        kwargs = {}
+
+        if media_content_type == MEDIA_TYPE_EPISODE:
+            if show_name is not None:
+                kwargs['show.title'] = show_name
+            if media_title is not None:
+                kwargs['episode.title'] = show_name
+            if season_number is not None:
+                kwargs['season.index'] = season_number
+            if episode_number is not None:
+                kwargs['episode.index'] = episode_number
+        if media_content_type == MEDIA_TYPE_MOVIE:
+            if media_title is not None:
+                kwargs['title'] = media_title
+
+        _LOGGER.info(f'Getting library items: {str(kwargs)}')
+        media_items = await hass.loop.run_in_executor(
+            None,
+            functools.partial(
+                plex_server_library.search,
+                **{k: v for k, v in kwargs.items() if v is not None}
+            )
         )
+        # media_items = await _search_library(
+        #     plex_server_library,
+        #     libtype=media_content_type,
+        #     title=media_title,
+        #     grandparentTitle=show_name,
+        #     index=episode_number if show_name is not None else None,
+        #     parentIndex=season_number if show_name is not None else None
+        # )
         # media_items = await _get_library_items_of_type(
         #     plex_server_library,
         #     media_content_type
@@ -173,18 +195,6 @@ async def async_setup(
             return None
 
         return matching_plex_servers[0].library
-
-    async def _search_library(
-            plex_server_library: Library,
-            **kwargs
-    ):
-        return await hass.loop.run_in_executor(
-            None,
-            functools.partial(
-                plex_server_library.search,
-                **{k: v for k, v in kwargs.items() if v is not None}
-            )
-        )
 
     async def _get_library_items_of_type(
             plex_server_library: Library,
@@ -291,12 +301,6 @@ async def async_setup(
         )
         if not entity:
             return
-
-        if show_name is not None:
-            media_content_type = MEDIA_TYPE_EPISODE
-            if pick_random:
-                episode = None
-                media_title = None
 
         search_result = await _search(media_content_type,
                                       server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
