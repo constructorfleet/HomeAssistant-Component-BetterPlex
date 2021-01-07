@@ -4,6 +4,7 @@ Add extra functionality to the Plex integration.
 For more details about this component, please refer to the documentation at
 https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
+import functools
 import logging
 from random import randint
 from typing import Optional
@@ -163,6 +164,22 @@ async def async_setup(
             return None
 
         return matching_plex_servers[0].library
+
+    async def _search_library(
+            plex_server_library: Library,
+            libtype: str,
+            title: str = None,
+            **kwargs
+    ):
+        return await hass.loop.run_in_executor(
+            None,
+            functools.partial(
+                plex_server_library.search,
+                title=title,
+                libtype=libtype,
+                **kwargs
+            )
+        )
 
     async def _get_library_items_of_type(
             plex_server_library: Library,
