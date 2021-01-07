@@ -108,7 +108,7 @@ async def async_setup(
             if show_name is not None:
                 kwargs['show.title'] = show_name
             if media_title is not None:
-                kwargs['episode.title'] = show_name
+                kwargs['episode.title'] = media_title
             if season_number is not None:
                 kwargs['season.index'] = season_number
             if episode_number is not None:
