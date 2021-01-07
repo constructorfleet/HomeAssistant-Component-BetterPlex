@@ -88,10 +88,10 @@ async def async_setup(
             media_content_type: str,
             server_name: str = None,
             media_title: str = None,
+            show_name: str = None,
             pick_random: bool = False,
-            # season_number: int = None,
-            # episode_number: int = None,
-            genres=None
+            season_number: int = None,
+            episode_number: int = None
     ) -> Optional[Video]:
         _LOGGER.info('Performing search')
         server_name = server_name
@@ -100,28 +100,33 @@ async def async_setup(
             return
 
         _LOGGER.info('Getting library items')
-        media_items = await _get_library_items_of_type(
+        media_items = await _search_library(
             plex_server_library,
-            media_content_type
+            title=media_title,
+            grandparentTitle=show_name
         )
+        # media_items = await _get_library_items_of_type(
+        #     plex_server_library,
+        #     media_content_type
+        # )
         if not media_items:
             _LOGGER.info('No items found')
             return
 
-        if genres:
-            media_items = _filter_items_by_genre(
-                media_items,
-                genres
-            )
-            if not media_items:
-                _LOGGER.info('No items found')
-                return
-
-        if media_title:
-            media_items = _filter_items_by_title(
-                media_items,
-                media_title
-            )
+        # if genres:
+        #     media_items = _filter_items_by_genre(
+        #         media_items,
+        #         genres
+        #     )
+        #     if not media_items:
+        #         _LOGGER.info('No items found')
+        #         return
+        #
+        # if media_title:
+        #     media_items = _filter_items_by_title(
+        #         media_items,
+        #         media_title
+        #     )
 
         _LOGGER.info('ITEMS %s', str(media_items))
 
