@@ -100,7 +100,9 @@ async def async_setup(
         if not plex_server_library:
             return
 
-        kwargs = {}
+        kwargs = {
+            'libtype': media_content_type
+        }
 
         if media_content_type == MEDIA_TYPE_EPISODE:
             if show_name is not None:
