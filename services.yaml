@@ -7,15 +7,21 @@ search_and_play:
     server_name:
       description: The plex server to search
       example: my-plex-server
+    show_name:
+      description: Name of the tv show
+      example: Rick & Morty
     pick_random:
       description: Pick a random item from the results
       example: true
-#    media_title: "South Park"
-#    season: 1
-#    episode: 10
+    media_title: "South Park"
+      description: Media title
+      example: Go god go
+    season:
+      description: Show season number
+      example: 1
+    episode:
+      description: Season episode number
+      example: 10
     media_content_type:
       description: The content type of the media
       example: movie
-    genres:
-      description: A list of genres to filter by
-      example: action
