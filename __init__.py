@@ -287,8 +287,8 @@ async def async_setup(
         show_name = service.data.get(ATTR_SHOW_NAME, None)
         media_title = service.data.get(ATTR_MEDIA_TITLE, None)
         pick_random = service.data.get(ATTR_PICK_RANDOM, False)
-        season = service.data.get(ATTR_SEASON_NUMBER, 1)
-        episode = service.data.get(ATTR_EPISODE_NUMBER, 1)
+        season = service.data.get(ATTR_SEASON_NUMBER, None)
+        episode = service.data.get(ATTR_EPISODE_NUMBER, None)
 
         entity = _get_media_player_by_entity_id(
             entity_id
