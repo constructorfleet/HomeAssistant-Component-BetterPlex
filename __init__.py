@@ -43,7 +43,7 @@ from .const import (
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     SERVICE_SEARCH_AND_PLAY,
-    VALID_MEDIA_TYPES, ATTR_SEASON_NUMBER, ATTR_EPISODE_NUMBER
+    VALID_MEDIA_TYPES, ATTR_SEASON_NUMBER, ATTR_EPISODE_NUMBER, MEDIA_TYPE_SHOW
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -295,6 +295,11 @@ async def async_setup(
         )
         if not entity:
             return
+
+        if show_name and not media_title and not season and not episode:
+            media_content_type = MEDIA_TYPE_SHOW
+            media_title = show_name
+            show_name = None
 
         search_result = await _search(media_content_type,
                                       server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
