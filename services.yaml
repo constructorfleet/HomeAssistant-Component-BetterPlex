@@ -13,7 +13,7 @@ search_and_play:
     pick_random:
       description: Pick a random item from the results
       example: true
-    media_title: "South Park"
+    media_title:
       description: Media title
       example: Go god go
     season:
