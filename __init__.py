@@ -103,6 +103,7 @@ async def async_setup(
         _LOGGER.info('Getting library items')
         media_items = await _search_library(
             plex_server_library,
+            libtype=media_content_type,
             title=media_title,
             grandparentTitle=show_name
         )
