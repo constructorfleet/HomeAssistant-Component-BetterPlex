@@ -32,6 +32,7 @@ from homeassistant.helpers.typing import (
 )
 from plexapi.library import Library
 from plexapi.video import Video
+from fuzzywuzzy import fuzz
 
 from .const import (
     ATTR_GENRES,
@@ -203,7 +204,15 @@ async def async_setup(
             item
             for item
             in media_items
-            if hasattr(item, 'genres') and list(set(genres) & set(item.genres))
+            if hasattr(item, 'genres') and len([
+                genre
+                for genre
+                in genres
+                if [fuzz.WRatio(
+                    item.genre.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
+                    genre.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
+                    full_process=True
+                ) > 95]]) > 0
         ]
 
         if not matching_items:
