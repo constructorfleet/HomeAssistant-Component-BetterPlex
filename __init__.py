@@ -14,7 +14,7 @@ import voluptuous as vol
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_TYPE,
     ATTR_MEDIA_CONTENT_ID,
-    SERVICE_PLAY_MEDIA
+    SERVICE_PLAY_MEDIA, MEDIA_TYPE_EPISODE
 )
 from homeassistant.components.plex import (
     PLEX_DOMAIN,
@@ -294,10 +294,11 @@ async def async_setup(
         if not entity:
             return
 
-        if show_name and not media_title and not season and not episode and not pick_random:
-            media_content_type = MEDIA_TYPE_SHOW
-            media_title = show_name
-            show_name = None
+        if show_name is not None:
+            media_content_type = MEDIA_TYPE_EPISODE
+            if pick_random:
+                episode = None
+                media_title = None
 
         search_result = await _search(media_content_type,
                                       server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
