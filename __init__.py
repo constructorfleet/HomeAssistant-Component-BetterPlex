@@ -294,7 +294,7 @@ async def async_setup(
         if not entity:
             return
 
-        if show_name and not media_title and not season and not episode:
+        if show_name and not media_title and not season and not episode and not pick_random:
             media_content_type = MEDIA_TYPE_SHOW
             media_title = show_name
             show_name = None
