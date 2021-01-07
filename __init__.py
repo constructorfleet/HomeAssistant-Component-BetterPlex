@@ -281,11 +281,11 @@ async def async_setup(
         entity_id = service.data.get(ATTR_ENTITY_ID)
         media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
         server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
+        show_name = service.data.get(ATTR_SHOW_NAME, None)
         media_title = service.data.get(ATTR_MEDIA_TITLE, None)
         pick_random = service.data.get(ATTR_PICK_RANDOM, False)
         season = service.data.get(ATTR_SEASON_NUMBER, 1)
         episode = service.data.get(ATTR_EPISODE_NUMBER, 1)
-        genres = service.data.get(ATTR_GENRES, None)
 
         entity = _get_media_player_by_entity_id(
             entity_id
@@ -296,10 +296,10 @@ async def async_setup(
         search_result = await _search(media_content_type,
                                       server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
                                       media_title,
+                                      show_name=show_name,
                                       pick_random=pick_random,
-                                      # season_number=season_number,
-                                      # episode_number=episode_number,
-                                      genres=None)
+                                      season_number=season,
+                                      episode_number=episode)
 
         if not search_result:
             _LOGGER.error("No media items match the search criteria")
