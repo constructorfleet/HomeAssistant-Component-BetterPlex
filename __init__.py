@@ -288,7 +288,7 @@ async def async_setup(
         _LOGGER.info('Sorting')
         return [item['media_item'] for item in sorted(matching_items, key=lambda item: item['match'], reverse=True)]
 
-    async def _perform_search(service):
+    async def _search_and_play(service):
         entity_id = service.data.get(ATTR_ENTITY_ID)
         media_content_type = service.data.get(ATTR_MEDIA_CONTENT_TYPE)
         server_name = service.data.get(ATTR_SERVER_NAME, conf.get(CONF_DEFAULT_SERVER_NAME, None))
@@ -323,7 +323,7 @@ async def async_setup(
             )
             return
 
-        _LOGGER.info('Invoking service')
+        _LOGGER.info(f'Invoking service with {search_result}')
         await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
@@ -338,7 +338,7 @@ async def async_setup(
     def handle_play_search_result(
             service
     ):
-        hass.loop.create_task(_perform_search(service))
+        hass.loop.create_task(_search_and_play(service))
         return True
 
     search_and_play_schema = vol.Schema(
