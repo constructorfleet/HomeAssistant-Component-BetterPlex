@@ -305,6 +305,7 @@ async def async_setup(
             service
     ):
         hass.loop.create_task(_perform_search(service))
+        return True
 
     search_and_play_schema = vol.Schema(
         {
