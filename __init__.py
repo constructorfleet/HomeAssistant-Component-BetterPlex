@@ -176,14 +176,12 @@ async def async_setup(
 
     async def _search_library(
             plex_server_library: Library,
-            libtype: str,
             **kwargs
     ):
         return await hass.loop.run_in_executor(
             None,
             functools.partial(
                 plex_server_library.search,
-                libtype=libtype,
                 **{k: v for k, v in kwargs.items() if v is not None}
             )
         )
