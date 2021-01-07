@@ -105,7 +105,9 @@ async def async_setup(
             plex_server_library,
             libtype=media_content_type,
             title=media_title,
-            grandparentTitle=show_name
+            grandparentTitle=show_name,
+            index=episode_number if show_name is not None else None,
+            parentIndex=season_number if show_name is not None else None
         )
         # media_items = await _get_library_items_of_type(
         #     plex_server_library,
