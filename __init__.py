@@ -314,7 +314,7 @@ async def async_setup(
 
         clients = [client
                    for client
-                   in plex_server.plextv_clients()
+                   in await hass.loop.run_in_executor(None, plex_server.account.resources)
                    if client.clientIdentifier in device_entry.identifiers]
         if not clients:
             _LOGGER.error('Unable to locate linked client')
