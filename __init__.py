@@ -10,6 +10,7 @@ from random import randint
 from typing import Optional
 
 import homeassistant.helpers.config_validation as cv
+import plexapi
 import voluptuous as vol
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_TYPE,
@@ -23,27 +24,28 @@ from homeassistant.components.plex import (
 from homeassistant.components.plex.media_player import (
     PlexMediaPlayer
 )
+from homeassistant.components.plex.server import PlexServer
 from homeassistant.const import (
     ATTR_ENTITY_ID
 )
 from homeassistant.core import callback
+from homeassistant.helpers.device_registry import async_get_registry as get_device_registry
+from homeassistant.helpers.entity_registry import async_get_registry as get_entity_registry
 from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
 )
-from plexapi.library import Library
+from plexapi.server import PlexServer as PlexServerAPI
 from plexapi.video import Video
-from fuzzywuzzy import fuzz
 
 from .const import (
-    ATTR_GENRES,
     ATTR_MEDIA_TITLE,
     ATTR_SHOW_NAME,
     ATTR_PICK_RANDOM,
     ATTR_SERVER_NAME,
     CONF_DEFAULT_SERVER_NAME,
     SERVICE_SEARCH_AND_PLAY,
-    VALID_MEDIA_TYPES, ATTR_SEASON_NUMBER, ATTR_EPISODE_NUMBER, MEDIA_TYPE_SHOW
+    VALID_MEDIA_TYPES, ATTR_SEASON_NUMBER, ATTR_EPISODE_NUMBER
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -86,8 +88,8 @@ async def async_setup(
         return entity
 
     async def _search(
+            plex_server_library: plexapi.server.PlexServer,
             media_content_type: str,
-            server_name: str = None,
             media_title: str = None,
             show_name: str = None,
             pick_random: bool = False,
@@ -95,10 +97,6 @@ async def async_setup(
             episode_number: int = None
     ) -> Optional[Video]:
         _LOGGER.info('Performing search')
-        server_name = server_name
-        plex_server_library = _get_plex_server_library_by_name(server_name)
-        if not plex_server_library:
-            return
 
         kwargs = {
             'libtype': media_content_type
@@ -169,9 +167,9 @@ async def async_setup(
         )
         return None
 
-    def _get_plex_server_library_by_name(
+    def _get_plex_server_by_name(
             server_name: str = None
-    ) -> Optional[Library]:
+    ) -> Optional[PlexServer]:
         if server_name is None:
             _LOGGER.error(
                 "Missing required argument 'server_name'."
@@ -196,97 +194,97 @@ async def async_setup(
             )
             return None
 
-        return matching_plex_servers[0].library
+        return matching_plex_servers[0]
 
-    async def _get_library_items_of_type(
-            plex_server_library: Library,
-            media_content_type: str
-    ):
-        results = await hass.async_add_executor_job(plex_server_library.search, None, media_content_type.lower())
-        matching_items = [
-            item for
-            item
-            in results
-            if item.TYPE.lower() == media_content_type.lower()
-        ]
+    # async def _get_library_items_of_type(
+    #         plex_server_library: Library,
+    #         media_content_type: str
+    # ):
+    #     results = await hass.async_add_executor_job(plex_server_library.search, None, media_content_type.lower())
+    #     matching_items = [
+    #         item for
+    #         item
+    #         in results
+    #         if item.TYPE.lower() == media_content_type.lower()
+    #     ]
+    #
+    #     if not matching_items:
+    #         _LOGGER.error(
+    #             "Requested content type '%s' not found in %s",
+    #             media_content_type.lower(),
+    #             [
+    #                 library_section.lower()
+    #                 for library_section
+    #                 in plex_server_library.library.sections()
+    #             ]
+    #         )
+    #         return None
+    #
+    #     return matching_items
 
-        if not matching_items:
-            _LOGGER.error(
-                "Requested content type '%s' not found in %s",
-                media_content_type.lower(),
-                [
-                    library_section.lower()
-                    for library_section
-                    in plex_server_library.library.sections()
-                ]
-            )
-            return None
+    # def _filter_items_by_genre(
+    #         media_items,
+    #         genres
+    # ):
+    #     if not genres:
+    #         _LOGGER.error(
+    #             "No genres specified to filter by"
+    #         )
+    #         return media_items
+    #
+    #     matching_items = [
+    #         item
+    #         for item
+    #         in media_items
+    #         if hasattr(item, 'genres') and len([
+    #             genre
+    #             for genre
+    #             in genres
+    #             if [fuzz.WRatio(
+    #                 item.genre.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
+    #                 genre.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
+    #                 full_process=True
+    #             ) > 95]]) > 0
+    #     ]
+    #
+    #     if not matching_items:
+    #         _LOGGER.error(
+    #             "No items match the specified genres %s",
+    #             genres
+    #         )
+    #         return None
+    #
+    #     return matching_items
 
-        return matching_items
-
-    def _filter_items_by_genre(
-            media_items,
-            genres
-    ):
-        if not genres:
-            _LOGGER.error(
-                "No genres specified to filter by"
-            )
-            return media_items
-
-        matching_items = [
-            item
-            for item
-            in media_items
-            if hasattr(item, 'genres') and len([
-                genre
-                for genre
-                in genres
-                if [fuzz.WRatio(
-                    item.genre.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
-                    genre.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
-                    full_process=True
-                ) > 95]]) > 0
-        ]
-
-        if not matching_items:
-            _LOGGER.error(
-                "No items match the specified genres %s",
-                genres
-            )
-            return None
-
-        return matching_items
-
-    def _filter_items_by_title(
-            media_items,
-            media_title
-    ):
-        from fuzzywuzzy import fuzz
-
-        _LOGGER.info('Performing fuzzy match')
-        matching_items = [
-            {
-                "media_item": item,
-                "match": fuzz.WRatio(
-                    media_title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
-                    item.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
-                    full_process=True
-                )
-            }
-            for item
-            in media_items
-        ]
-
-        if not matching_items:
-            _LOGGER.error(
-                "Unable to find any items with title close to %s",
-                media_title
-            )
-            return None
-
-        _LOGGER.info('Sorting')
-        return [item['media_item'] for item in sorted(matching_items, key=lambda item: item['match'], reverse=True)]
+    # def _filter_items_by_title(
+    #         media_items,
+    #         media_title
+    # ):
+    #     from fuzzywuzzy import fuzz
+    #
+    #     _LOGGER.info('Performing fuzzy match')
+    #     matching_items = [
+    #         {
+    #             "media_item": item,
+    #             "match": fuzz.WRatio(
+    #                 media_title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", media_title).lower(),
+    #                 item.title.lower(),  # re.sub(NON_ALPHA_NUMERIC_REGEX_PATTERN, "", item.title).lower(),
+    #                 full_process=True
+    #             )
+    #         }
+    #         for item
+    #         in media_items
+    #     ]
+    #
+    #     if not matching_items:
+    #         _LOGGER.error(
+    #             "Unable to find any items with title close to %s",
+    #             media_title
+    #         )
+    #         return None
+    #
+    #     _LOGGER.info('Sorting')
+    #     return [item['media_item'] for item in sorted(matching_items, key=lambda item: item['match'], reverse=True)]
 
     async def _search_and_play(service):
         entity_id = service.data.get(ATTR_ENTITY_ID)
@@ -298,11 +296,34 @@ async def async_setup(
         season = service.data.get(ATTR_SEASON_NUMBER, None)
         episode = service.data.get(ATTR_EPISODE_NUMBER, None)
 
-        entity = _get_media_player_by_entity_id(
-            entity_id
-        )
-        if not entity:
+        plex_server = _get_plex_server_by_name(server_name)
+        if not plex_server:
+            _LOGGER.error('Unable to lookup server by name %s', server_name)
             return
+
+        entity_registry = await get_entity_registry(hass)
+        entity_entry = entity_registry.async_get(entity_id)
+        if not entity_entry:
+            _LOGGER.error('Unable to lookup entity from registry with entity id of %s', entity_id)
+            return
+        device_registry = await get_device_registry(hass)
+        device_entry = device_registry.async_get(entity_entry.device_id)
+        if not device_entry:
+            _LOGGER.error('Unable to lookup device from registry with device id of %s', entity_entry.device_id)
+            return
+
+        clients = [client
+                   for client
+                   in plex_server.plextv_clients()
+                   if client.clientIdentifier in device_entry.identifiers]
+        if not clients:
+            _LOGGER.error('Unable to locate linked client')
+            return
+
+        await hass.loop.run_in_executor(
+            None,
+            clients[0].connect
+        )
 
         search_result = await _search(media_content_type,
                                       server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
@@ -324,6 +345,12 @@ async def async_setup(
             return
 
         _LOGGER.info(f'Invoking service with {search_result}')
+        entity = _get_media_player_by_entity_id(
+            entity_id
+        )
+        if not entity:
+            return
+
         await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN,
             SERVICE_PLAY_MEDIA,
