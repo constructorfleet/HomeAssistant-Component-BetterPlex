@@ -332,9 +332,9 @@ async def async_setup(
             client.connect
         )
 
-        search_result = await _search(media_content_type,
-                                      server_name or conf.get(CONF_DEFAULT_SERVER_NAME, None),
-                                      media_title,
+        search_result = await _search(plex_server.library,
+                                      media_content_type,
+                                      media_title=media_title,
                                       show_name=show_name,
                                       pick_random=pick_random,
                                       season_number=season,
