@@ -315,7 +315,7 @@ async def async_setup(
         client = None
         for resource in await hass.loop.run_in_executor(None, plex_server.account.resources):
             _LOGGER.info('Resource: {} {} {}'.format(resource.name, resource.clientIdentifier, resource.device))
-            if resource.clientIdentifier in device_entry.identifiers:
+            if resource.clientIdentifier in device_entry.identifiers[0]:
                 client = resource
                 break
         # clients = [client
