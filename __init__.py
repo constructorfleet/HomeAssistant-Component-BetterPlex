@@ -312,17 +312,23 @@ async def async_setup(
             _LOGGER.error('Unable to lookup device from registry with device id of %s', entity_entry.device_id)
             return
         _LOGGER.info('Found device entry: {} {}'.format(device_entry.name, str(device_entry.identifiers)))
-        clients = [client
-                   for client
-                   in await hass.loop.run_in_executor(None, plex_server.account.resources)
-                   if client.clientIdentifier in device_entry.identifiers]
-        if not clients:
+        client = None
+        for resource in await hass.loop.run_in_executor(None, plex_server.account.resources):
+            _LOGGER.info('Resource: {} {} {}'.format(resource.name, resource.clientIdentifier, resource.device))
+            if resource.clientIdentifier in device_entry.identifiers:
+                client = resource
+                break
+        # clients = [client
+        #            for client
+        #            in await hass.loop.run_in_executor(None, plex_server.account.resources)
+        #            if client.clientIdentifier in device_entry.identifiers]
+        if not client:
             _LOGGER.error('Unable to locate linked client')
             return
 
         await hass.loop.run_in_executor(
             None,
-            clients[0].connect
+            client.connect
         )
 
         search_result = await _search(media_content_type,
