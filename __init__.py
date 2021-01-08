@@ -311,7 +311,7 @@ async def async_setup(
         if not device_entry:
             _LOGGER.error('Unable to lookup device from registry with device id of %s', entity_entry.device_id)
             return
-
+        _LOGGER.info('Found device entry: {} {}'.format(device_entry.name, str(device_entry.identifiers)))
         clients = [client
                    for client
                    in await hass.loop.run_in_executor(None, plex_server.account.resources)
