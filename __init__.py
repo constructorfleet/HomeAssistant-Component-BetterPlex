@@ -5,6 +5,7 @@ For more details about this component, please refer to the documentation at
 https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex
 """
 import functools
+import itertools
 import logging
 from random import randint
 from typing import Optional
@@ -315,7 +316,7 @@ async def async_setup(
         client = None
         for resource in await hass.loop.run_in_executor(None, plex_server.account.resources):
             _LOGGER.info('Resource: {} {} {}'.format(resource.name, resource.clientIdentifier, resource.device))
-            if resource.clientIdentifier in device_entry.identifiers[0]:
+            if resource.clientIdentifier in list(itertools.chain(*device_entry.identifiers)):
                 client = resource
                 break
         # clients = [client
