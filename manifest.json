@@ -2,6 +2,7 @@
   "domain": "better_plex",
   "name": "Better Plex",
   "documentation": "https://github.com/constructorfleet/HomeAssistant-Component-BetterPlex",
+  "version": "1.0.0",
   "requirements": [
     "fuzzywuzzy[speedup]==0.18.0",
     "python-levenshtein==0.12.0"
