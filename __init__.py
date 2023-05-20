@@ -30,8 +30,8 @@ from homeassistant.const import (
     ATTR_ENTITY_ID
 )
 from homeassistant.core import callback
-from homeassistant.helpers.device_registry import async_get_registry as get_device_registry
-from homeassistant.helpers.entity_registry import async_get_registry as get_entity_registry
+from homeassistant.helpers.device_registry import async_get as get_device_registry
+from homeassistant.helpers.entity_registry import async_get as get_entity_registry
 from homeassistant.helpers.typing import (
     HomeAssistantType,
     ConfigType
