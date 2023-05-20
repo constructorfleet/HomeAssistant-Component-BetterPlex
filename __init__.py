@@ -19,7 +19,7 @@ from homeassistant.components.media_player.const import (
     SERVICE_PLAY_MEDIA, MEDIA_TYPE_EPISODE, MEDIA_TYPE_MOVIE
 )
 from homeassistant.components.plex import (
-    PLEX_DOMAIN,
+    DOMAIN as PLEX_DOMAIN,
     SERVERS
 )
 from homeassistant.components.plex.media_player import (
